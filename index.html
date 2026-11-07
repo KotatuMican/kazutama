@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>かずたま アプリ</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #2c3e50;
+            max-width: 680px;
+            margin: 30px auto;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            box-sizing: border-box;
+        }
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+            color: #1a252f;
+            margin-bottom: 5px;
+        }
+        p.description {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+        }
+        .section {
+            background: #ffffff;
+            padding: 20px;
+            border: 1px solid #e1e8ed;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .section h2 {
+            font-size: 1.15rem;
+            color: #34495e;
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+        textarea, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-sizing: border-box;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        textarea:focus, input:focus {
+            border-color: #3498db;
+        }
+        textarea {
+            height: 70px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: background-color 0.2s, opacity 0.2s;
+        }
+        button:hover {
+            opacity: 0.95;
+            background-color: #2980b9;
+        }
+        .result-box {
+            margin-top: 12px;
+            padding: 15px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            word-break: break-all;
+            line-height: 1.6;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .result-total {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 6px;
+        }
+        .dict-info {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 8px;
+        }
+        .length-group {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        .length-group:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .length-title {
+            font-weight: bold;
+            color: #2980b9;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+        /* Toggle Switch Styling */
+        .filter-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f1f5f9;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #334155;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1;
+            transition: .3s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #27ae60;
+        }
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+        .note {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>かずたま アプリ</h1>
+    <p class="description">数字変換、辞書記憶、および数ごとの文字候補を表示する全探索検索機能があります</p>
+
+    <!-- Section 1: Calculation -->
+    <div class="section">
+        <h2>1. 文字から合計を計算</h2>
+        <textarea id="inputText" placeholder="ここにひらがなを入力（例：ひまわり など）"></textarea>
+        <button onclick="calculate()">変換して合計する</button>
+        <div class="result-box" style="margin-top: 12px;">
+            <div class="result-total" id="totalResult">合計: -</div>
+            <div class="breakdown" id="breakdownResult">文字ごとの内訳がここに表示されます。</div>
+        </div>
+    </div>
+
+    <!-- Section 2: Dictionary Memory -->
+    <div class="section">
+        <h2>2. 新しい単語を辞書に記憶させる</h2>
+        <p style="font-size: 0.85rem; color: #64748b; margin-top: 0;">5文字以内のひらがな単語をブラウザに永続保存します。</p>
+        <input type="text" id="newWord" placeholder="例: ひまわり など">
+        <button onclick="addNewWord()" style="background-color: #d35400;">単語を記憶する</button>
+        <div class="dict-info" id="dictCount">現在の登録単語数: 0件</div>
+    </div>
+
+    <!-- Section 3: Reverse Search with Backtracking & Multi-Length Grouping -->
+    <div class="section">
+        <h2>3. 合計値から単語を検索（1〜5文字を各文字数ごとに表示）</h2>
+        
+        <div class="filter-container">
+            <span>登録された文字のみに絞り込む (辞書フィルター)</span>
+            <label class="switch">
+                <input type="checkbox" id="dictFilterToggle" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <input type="number" id="targetSum" placeholder="例: 93">
+        <button onclick="searchAllWords()" style="background-color: #27ae60;">一致する文字列を探す</button>
+        <div class="note">※スイッチOFF時は1文字〜5文字の各 長さごとに、日本語音韻の候補を整理して表示します。47以上の数字を入力すると候補が多い為、時間がかかる場合があります。あらかじめ、ご了承ください。</div>
+        <div class="result-box" id="searchResult" style="margin-top: 12px;">
+            検索結果などがここに表示されます。
+        </div>
+    </div>
+
+    <script>
+        const awautaList = [
+            "ひ", "ふ", "み", "よ", "い", "む", "な", "や", "こ", "と", "も", "ち", "ろ", "ら", "ね",
+            "し", "き", "る", "ゆ", "ゐ", "つ", "わ", "ぬ", "そ", "를", "た", "は", "く", "め", "か",
+            "う", "お", "え", "に", "さ", "り", "へ", "て", "の", "ま", "す", "あ", "せ", "ゑ", "ほ", "れ", "け", "ん"
+        ];
+        // Correcting typo '를' to 'を' in list just in case
+        const cleanAwautaList = [
+            "ひ", "ふ", "み", "よ", "い", "む", "な", "や", "こ", "と", "も", "ち", "ろ", "ら", "ね",
+            "し", "き", "る", "ゆ", "ゐ", "つ", "わ", "ぬ", "そ", "を", "た", "は", "く", "め", "か",
+            "う", "お", "え", "に", "さ", "り", "へ", "て", "の", "ま", "す", "あ", "せ", "ゑ", "ほ", "れ", "け", "ん"
+        ];
+
+        const charToNum = {};
+        cleanAwautaList.forEach((char, index) => {
+            charToNum[char] = index + 1;
+        });
+
+        const conversionMap = {
+            'ぁ': 'あ', 'ぃ': 'い', 'ぅ': 'う', 'ぇ': 'え', 'ぉ': 'お',
+            'っ': 'つ', 'ゃ': 'や', 'ゅ': 'ゆ', 'ょ': 'よ',
+            'ゎ': 'わ', 'ヵ': 'か', 'ヶ': 'け',
+            'が': 'か', 'ぎ': 'き', 'ぐ': 'く', 'げ': 'け', 'ご': 'こ',
+            'ざ': 'さ', 'じ': 'し', 'ず': 'す', 'ぜ': 'せ', 'ぞ': 'そ',
+            'だ': 'た', 'ぢ': 'ち', 'づ': 'つ', 'で': 'て', 'ど': 'と',
+            'ば': 'は', 'び': 'ひ', 'ぶ': 'ふ', 'べ': 'へ', 'ぼ': 'ほ',
+            'ぱ': 'は', 'ぴ': 'ひ', 'ぷ': 'ふ', 'ぺ': 'へ', 'ぽ': 'ほ'
+        };
+
+        function normalizeChar(char) {
+            return conversionMap[char] || char;
+        }
+
+        function getWordSum(word) {
+            let sum = 0;
+            for (let i = 0; i < word.length; i++) {
+                const char = normalizeChar(word[i]);
+                if (charToNum[char] !== undefined) {
+                    sum += charToNum[char];
+                } else {
+                    return null; 
+                }
+            }
+            return sum;
+        }
+
+        const defaultDictionary = [
+            "りんご", "みかん", "すいか", "さくら", "ひまわり",
+            "いぬ", "ねこ", "うさぎ", "きつね", "たぬき",
+            "あお", "あか", "きいろ", "みどり", "しろ",
+            "そら", "うみ", "やま", "かわ", "ほし",
+            "ことば", "うた", "ひかり", "こころ", "いのち",
+            "あわうた", "ふじさん", "きもの", "おちゃ",
+            "あ", "い", "う", "え", "お", "か", "き", "く", "け", "こ"
+        ];
+
+        function getDictionary() {
+            const saved = localStorage.getItem("awauta_dictionary_v8");
+            if (saved) {
+                return JSON.parse(saved);
+            } else {
+                localStorage.setItem("awauta_dictionary_v8", JSON.stringify(defaultDictionary));
+                return defaultDictionary;
+            }
+        }
+
+        function updateDictCount() {
+            const dict = getDictionary();
+            document.getElementById("dictCount").innerText = `現在の登録単語数: ${dict.length}件`;
+        }
+
+        function addNewWord() {
+            const inputField = document.getElementById("newWord");
+            const word = inputField.value.trim();
+
+            if (!word) {
+                showMsg("単語を入力してください。");
+                return;
+            }
+
+            if (word.length > 5) {
+                showMsg("単語は5文字以内で入力してください。");
+                return;
+            }
+
+            for (let i = 0; i < word.length; i++) {
+                const char = normalizeChar(word[i]);
+                if (charToNum[char] === undefined) {
+                    showMsg(`「${word[i]}」は対象外の文字が含まれているため登録できません。`);
+                    return;
+                }
+            }
+
+            let dict = getDictionary();
+            if (dict.includes(word)) {
+                showMsg("その単語はすでに登録されています！");
+                return;
+            }
+
+            dict.push(word);
+            localStorage.setItem("awauta_dictionary_v8", JSON.stringify(dict));
+            inputField.value = "";
+            updateDictCount();
+            showMsg(`「${word}」を記憶させました！（合計: ${getWordSum(word)}）`);
+        }
+
+        function showMsg(text) {
+            const box = document.getElementById("searchResult");
+            box.innerText = text;
+        }
+
+        function calculate() {
+            const rawInput = document.getElementById("inputText").value;
+            let total = 0;
+            let details = [];
+
+            for (let i = 0; i < rawInput.length; i++) {
+                const originalChar = rawInput[i];
+                const char = normalizeChar(originalChar);
+
+                if (charToNum[char] !== undefined) {
+                    const num = charToNum[char];
+                    total += num;
+                    if (originalChar !== char) {
+                        details.push(`${originalChar}→${char}(${num})`);
+                    } else {
+                        details.push(`${char}(${num})`);
+                    }
+                } else {
+                    if (originalChar.trim() !== "") {
+                        details.push(`${originalChar}(対象外)`);
+                    }
+                }
+            }
+
+            if (rawInput.trim() === "") {
+                document.getElementById("totalResult").innerText = "合計: -";
+                document.getElementById("breakdownResult").innerText = "文字ごとの変換結果がここに表示されます。";
+            } else {
+                document.getElementById("totalResult").innerText = `合計: ${total}`;
+                document.getElementById("breakdownResult").innerHTML = `<strong>内訳:</strong> ${details.join(" ＋ ")}`;
+            }
+        }
+
+        function isPhoneticallyUnnatural(word) {
+            const len = word.length;
+            if (len === 0) return true;
+
+            // Rule 1: Reject if any character repeats 2 or more consecutive times (e.g., "ひひ", "ああ")
+            for (let i = 0; i < len - 1; i++) {
+                if (word[i] === word[i+1]) {
+                    return true;
+                }
+            }
+
+            // Rule 2: Reject if starts with 'ん'
+            if (word.startsWith("ん")) return true;
+
+            // Rule 3: Reject multiple 'ん' characters
+            let n_count = 0;
+            for (let i = 0; i < len; i++) {
+                if (word[i] === "ん") n_count++;
+            }
+            if (n_count > 1) return true;
+
+            // Rule 4: Vowel check for words length >= 3
+            const vowels = new Set(["あ", "い", "う", "え", "お"]);
+            let vowelCount = 0;
+            for (let i = 0; i < len; i++) {
+                if (vowels.has(word[i])) {
+                    vowelCount++;
+                }
+            }
+            if (len >= 3 && vowelCount === 0) {
+                return true;
+            }
+
+            // Rule 5: Check consecutive heavy consonants (3+ in a row)
+            let consecutiveConsonants = 0;
+            for (let i = 0; i < len; i++) {
+                if (!vowels.has(word[i]) && word[i] !== "ん") {
+                    consecutiveConsonants++;
+                    if (consecutiveConsonants >= 3) {
+                        return true;
+                    }
+                } else {
+                    consecutiveConsonants = 0;
+                }
+            }
+
+            return false;
+        }
+
+        function searchAllWords() {
+            const target = parseInt(document.getElementById("targetSum").value);
+            const isFilterOn = document.getElementById("dictFilterToggle").checked;
+            const resultBox = document.getElementById("searchResult");
+
+            if (isNaN(target)) {
+                resultBox.innerText = "有効な数字を入力してください。";
+                return;
+            }
+
+            resultBox.innerText = "検索中...";
+
+            setTimeout(() => {
+                // We store matches grouped by length: 1, 2, 3, 4, 5
+                const resultsByLength = {
+                    1: [],
+                    2: [],
+                    3: [],
+                    4: [],
+                    5: []
+                };
+
+                const dict = getDictionary();
+                const dictSet = new Set(dict);
+
+                if (isFilterOn) {
+                    // Filter ON: Use dictionary database
+                    for (let word of dict) {
+                        const len = word.length;
+                        if (len >= 1 && len <= 5) {
+                            if (getWordSum(word) === target) {
+                                resultsByLength[len].push(word);
+                            }
+                        }
+                    }
+                } else {
+                    // Filter OFF: Recursive backtracking for each length from 1 to 5
+                    function backtrack(depth, currentSum, currentStr, targetLen) {
+                        if (currentSum > target || depth > targetLen) return;
+                        if (depth === targetLen) {
+                            if (currentSum === target) {
+                                if (!isPhoneticallyUnnatural(currentStr)) {
+                                    resultsByLength[targetLen].push(currentStr);
+                                }
+                            }
+                            return;
+                        }
+
+                        for (let i = 0; i < cleanAwautaList.length; i++) {
+                            let char = cleanAwautaList[i];
+                            backtrack(depth + 1, currentSum + charToNum[char], currentStr + char, targetLen);
+                        }
+                    }
+
+                    // Run backtracking for lengths 1 to 5 independently to ensure all lengths are thoroughly searched
+                    for (let l = 1; l <= 5; l++) {
+                        backtrack(0, 0, "", l);
+                    }
+                }
+
+                // Deduplicate items in each length group
+                let totalMatchesCount = 0;
+                let htmlOutput = "";
+
+                for (let l = 1; l <= 5; l++) {
+                    const uniqueList = Array.from(new Set(resultsByLength[l]));
+                    if (uniqueList.length > 0) {
+                        totalMatchesCount += uniqueList.length;
+                        htmlOutput += `
+                            <div class="length-group">
+                                <div class="length-title">【 ${l}文字の候補 (${uniqueList.length}件) 】</div>
+                                <div>${uniqueList.join("、 ")}</div>
+                            </div>
+                        `;
+                    }
+                }
+
+                if (totalMatchesCount > 0) {
+                    resultBox.innerHTML = `<strong>検索結果 合計 ${totalMatchesCount}件:</strong><br><br>` + htmlOutput;
+                } else {
+                    resultBox.innerText = isFilterOn 
+                        ? "条件に一致する「辞書に登録された意味のある単語」は見つかりませんでした。（新しい単語を記憶させるか、スイッチをOFFにしてみてください）"
+                        : "指定した合計値に一致する、1〜5文字の自然な読みの文字列は見つかりませんでした。";
+                }
+            }, 10);
+        }
+
+        window.onload = function() {
+            updateDictCount();
+        };
+    </script>
+
+</body>
+</html>
+```
